@@ -1,0 +1,103 @@
+/* Genel Body Ayarları */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7fb; /* Hafif gri arka plan */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  color: #333;
+}
+
+/* Başlık için Stil */
+#head {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  background-color: #3f72af; /* Mavi arkaplan */
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin: 0;
+  font-size: 36px;
+  color: #ffffff;
+}
+
+/* Verilerin Görüntüleneceği Container */
+.data-container {
+  display: flex;
+  justify-content: space-around;
+  width: 80%;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Her Data Item (Veri) İçin Stil */
+.data-item {
+  width: 30%;
+  text-align: center;
+  padding: 15px;
+  background-color: #f0f4f8;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.data-item:hover {
+  transform: translateY(-10px); /* Hover efekti ile yükselme */
+}
+
+.data-item h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #3f72af;
+}
+
+.data-item p {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Harita Bölümü */
+#map {
+  width: 80%;
+  max-width: 900px;
+  height: 400px;
+  margin: 30px auto;
+  background-color: #3f72af; /* Harita arka plan rengi */
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Tasarım için Ayarlar */
+@media (max-width: 768px) {
+  .data-container {
+    flex-direction: column;
+    width: 90%;
+    padding: 20px;
+  }
+
+  .data-item {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  #map {
+    width: 90%;
+    height: 300px;
+  }
+}
+  
