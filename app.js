@@ -25,6 +25,10 @@ let gpslon = 0;
 let map;
 let marker;
 
+const deviceName = 'ChildFind';
+const bleService = '316fcd1e-6633-4867-a7c2-10ec1ad572bd';
+const bleCharacteristicUUID = '947058d8-f673-466b-9962-fff313df956e';
+
 // Haritayı Başlat
 function initMap(lat, lon) {
     let mapOptions = {

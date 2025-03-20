@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SIM Card APN CONFIGURATION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <div class="container">
+        <h1>SIM Card APN CONFIGURATION</h1>
+        <input type="text" id="bleData" placeholder="Enter your APN" disabled>
+        <button id="connectBtn" class="btn">Connect</button>
+        <button id="sendBtn" class="btn" disabled>Send APN</button>
+        <div id="status"></div>
+        <div id="receivedData"></div>
+        <button onclick="window.location.href='index.html'" class="back-button">Return to Main Page</button>
+    </div>
+
+    <script>
+        let bleDevice;
+        let bleCharacteristic;
+
+        // DOM Elements
+        const connectButton = document.getElementById('connectBtn');
+        const sendButton = document.getElementById('sendBtn');
+        const bleDataInput = document.getElementById('bleData');
+        const statusDiv = document.getElementById('status');
+        const receivedDataDiv = document.getElementById('receivedData');
+
+        const deviceName = 'ChildFind';  // Change this to your device's name
+        const bleService = '316fcd1e-6633-4867-a7c2-10ec1ad572bd';  // Replace with your service UUID
+        const bleCharacteristicUUID = '947058d8-f673-466b-9962-fff313df956e';  // Replace with your characteristic UUID
+
+        // Connect Button
+        connectButton.addEventListener('click', () => {
+            if (bleDevice) {
+                bleDevice.gatt.disconnect();
+                bleDevice = null;
+                connectButton.textContent = 'Connect';
+                bleDataInput.disabled = true;
+                sendButton.disabled = true;
+                updateStatus('Disconnected from device.', "#FF6347");
+                return;
+            }
+
+            if (!navigator.bluetooth) {
+                updateStatus('Web Bluetooth API is not available in this browser/device!', "#FF6347", true);
+                return;
+            }
+
+            navigator.bluetooth.requestDevice({
+                filters: [{ name: deviceName }],
+                optionalServices: [bleService]
+            })
+                .then(device => {
+                    bleDevice = device;
+                    updateStatus('Connecting to device...', "#333");
+                    device.addEventListener('gattserverdisconnected', onDisconnected);
+                    return device.gatt.connect();
+                })
+                .then(server => {
+                    return server.getPrimaryService(bleService);
+                })
+                .then(service => {
+                    return service.getCharacteristic(bleCharacteristicUUID);
+                })
+                .then(characteristic => {
+                    bleCharacteristic = characteristic;
+                    updateStatus('Connected!', "#2ECC71");
+                    connectButton.textContent = 'Disconnect';
+                    bleDataInput.disabled = false;
+                    sendButton.disabled = false;
+                    return characteristic.readValue();
+                })
+                .then(value => {
+                    const decoder = new TextDecoder();
+                    const receivedData = decoder.decode(value);
+                    updateReceivedData(`Current APN: ${receivedData}`);
+                })
+                .catch(error => {
+                    updateStatus(`Error: ${error.message}`, "#FF6347", true);
+                    console.error('Bluetooth Error:', error);
+                });
+        });
+
+        // Send Button
+        sendButton.addEventListener('click', () => {
+            if (!bleDevice || !bleCharacteristic) {
+                updateStatus('Not connected to any device.', "#FF6347", true);
+                return;
+            }
+
+            const apn = 'apn' + bleDataInput.value.trim();
+            if (apn === 'apn') {
+                alert('Please enter an APN.');
+                return;
+            }
+
+            const encoder = new TextEncoder();
+            const data = encoder.encode(apn);
+
+            bleCharacteristic.writeValue(data)
+                .then(() => {
+                    return bleCharacteristic.readValue();
+                })
+                .then(value => {
+                    const decoder = new TextDecoder();
+                    const receivedData = decoder.decode(value);
+                    updateReceivedData(`Updated APN: ${receivedData}`);
+                    bleDataInput.value = '';  // Clear the input field after sending
+                })
+                .catch(error => {
+                    updateStatus(`Error: ${error.message}`, "#FF6347", true);
+                    console.error('Bluetooth Error:', error);
+                });
+        });
+
+        // Handle device disconnection
+        function onDisconnected(event) {
+            console.log('Device disconnected:', event.target);
+            bleDevice = null;
+            connectButton.textContent = 'Connect';
+            bleDataInput.disabled = true;
+            sendButton.disabled = true;
+            updateStatus('Device disconnected.', "#333");
+        }
+
+        // Update status
+        function updateStatus(message, color, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.style.color = color;
+            if (isError) {
+                statusDiv.style.color = '#ff6347';
+            }
+
+        }
+
+        // Update received data
+        function updateReceivedData(message) {
+            receivedDataDiv.textContent = message;
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px;
+            font-size: 16px;
+            width: calc(100% - 24px);
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+            color: white;
+            background-color: #4A90E2;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:active {
+            background-color: #357ABD;
+        }
+
+        #status,
+        #receivedData {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        #status {
+            color: #ff6347;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            input,
+            .btn {
+                font-size: 14px;
+            }
+
+            input {
+                padding: 10px;
+            }
+
+            .btn {
+                padding: 12px 16px;
+            }
+        }
+
+        .back-button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .back-button:hover {
+            background-color: #357ABD;
+        }
+    </style>
+</body>
+
+</html>
