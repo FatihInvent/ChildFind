@@ -105,10 +105,10 @@
             if (bleDevice) {
                 await bleDevice.gatt.disconnect();
                 bleDevice = null;
-                connectButton.textContent = 'Bağlan';
+                connectButton.textContent = 'Connect';
                 bleDataInput.disabled = true;
                 sendButton.disabled = true;
-                updateStatus('Cihaz bağlantısı kesildi.', "#FF6347");
+                updateStatus('Connection Disconnected.', "#FF6347");
                 return;
             }
 
@@ -138,7 +138,7 @@
             bleCharacteristic = await service.getCharacteristic(bleCharacteristicUUID);
             
             updateStatus('Bağlandı!', "#2ECC71");
-            connectButton.textContent = 'Bağlantıyı Kes';
+            connectButton.textContent = 'Disconnect';
             bleDataInput.disabled = false;
             sendButton.disabled = false;
 
@@ -155,7 +155,7 @@
             console.error('Bluetooth Hatası:', error);
             updateStatus(`Hata: ${error.message}`, "#FF6347", true);
             bleDevice = null;
-            connectButton.textContent = 'Bağlan';
+            connectButton.textContent = 'Connect';
             bleDataInput.disabled = true;
             sendButton.disabled = true;
         }
@@ -196,10 +196,10 @@
     function onDisconnected(event) {
         console.log('Cihaz bağlantısı kesildi:', event.target);
         bleDevice = null;
-        connectButton.textContent = 'Bağlan';
+        connectButton.textContent = 'Connect';
         bleDataInput.disabled = true;
         sendButton.disabled = true;
-        updateStatus('Cihaz bağlantısı kesildi.', "#333");
+        updateStatus('Connection Disconnected.', "#333");
     }
 
     function updateStatus(message, color, isError = false) {
