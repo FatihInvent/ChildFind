@@ -13,8 +13,8 @@
 
   <!-- Sekme Butonları -->
   <div class="tab-buttons">
-    <button class="tab-button active" onclick="openTab(event, 'Location')">Location</button>
-    <button class="tab-button" onclick="openTab(event, 'Apn')">APN Configuration</button>
+    <button class="tab-button active" onclick="openTab(event, 'konum')">Location Tracking</button>
+    <button class="tab-button" onclick="openTab(event, 'apn')">APN Configuration</button>
   </div>
 
   <!-- Konum Takibi Sekmesi -->
@@ -43,9 +43,9 @@
   <div id="apn" class="tab-content">
     <div class="container">
       <h1>SIM Card APN CONFIGURATION</h1>
-      <input type="text" id="bleData" placeholder="Enter a valid APN value" disabled>
+      <input type="text" id="bleData" placeholder="Enter APN value" disabled>
       <button id="connectBtn" class="btn">Connect</button>
-      <button id="sendBtn" class="btn" disabled>Set APN</button>
+      <button id="sendBtn" class="btn" disabled>Send APN</button>
       <div id="status"></div>
       <div id="receivedData"></div>
     </div>
@@ -108,12 +108,12 @@
                 connectButton.textContent = 'Connect';
                 bleDataInput.disabled = true;
                 sendButton.disabled = true;
-                updateStatus('Connection Disconnected.', "#FF6347");
+                updateStatus('Device disconnected.', "#FF6347");
                 return;
             }
 
             if (!navigator.bluetooth) {
-                updateStatus('Web Bluetooth API is not available in this browser!', "#FF6347", true);
+                updateStatus('Web Bluetooth API is not supported in this browser!', "#FF6347", true);
                 return;
             }
 
@@ -129,7 +129,8 @@
             // Bağlantıyı bekle
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            const server = ('Searching for service...', "#333");
+            const server = await bleDevice.gatt.connect();
+            updateStatus('Searching for service...', "#333");
             
             const service = await server.getPrimaryService(bleService);
             updateStatus('Searching for characteristic...', "#333");
@@ -163,13 +164,13 @@
     // Send Button
     sendButton.addEventListener('click', () => {
         if (!bleDevice || !bleCharacteristic) {
-            updateStatus('Not Connected to Device.', "#FF6347", true);
+            updateStatus('Not connected to device.', "#FF6347", true);
             return;
         }
 
         const apn = 'apn' + bleDataInput.value.trim();
         if (apn === 'apn') {
-            alert('Enter a valid APN value.');
+            alert('Please enter an APN value.');
             return;
         }
 
@@ -193,12 +194,12 @@
     });
 
     function onDisconnected(event) {
-        console.log('Disconnected!:', event.target);
+        console.log('Device disconnected:', event.target);
         bleDevice = null;
         connectButton.textContent = 'Connect';
         bleDataInput.disabled = true;
         sendButton.disabled = true;
-        updateStatus('Connection Disconnected.', "#333");
+        updateStatus('Device disconnected.', "#333");
     }
 
     function updateStatus(message, color, isError = false) {
