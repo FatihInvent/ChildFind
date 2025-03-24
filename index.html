@@ -13,8 +13,8 @@
 
   <!-- Sekme Butonları -->
   <div class="tab-buttons">
-    <button class="tab-button active" onclick="openTab(event, 'konum')">Konum Takibi</button>
-    <button class="tab-button" onclick="openTab(event, 'apn')">APN Yapılandırma</button>
+    <button class="tab-button active" onclick="openTab(event, 'konum')">Location</button>
+    <button class="tab-button" onclick="openTab(event, 'apn')">APN Configuration</button>
   </div>
 
   <!-- Konum Takibi Sekmesi -->
@@ -44,8 +44,8 @@
     <div class="container">
       <h1>SIM Card APN CONFIGURATION</h1>
       <input type="text" id="bleData" placeholder="APN değerini girin" disabled>
-      <button id="connectBtn" class="btn">Bağlan</button>
-      <button id="sendBtn" class="btn" disabled>APN Gönder</button>
+      <button id="connectBtn" class="btn">Connect</button>
+      <button id="sendBtn" class="btn" disabled>Set APN</button>
       <div id="status"></div>
       <div id="receivedData"></div>
     </div>
@@ -100,67 +100,76 @@
     const bleCharacteristicUUID = '947058d8-f673-466b-9962-fff313df956e';
 
     // Connect Button
-    connectButton.addEventListener('click', () => {
-        if (bleDevice) {
-            bleDevice.gatt.disconnect();
+    connectButton.addEventListener('click', async () => {
+        try {
+            if (bleDevice) {
+                await bleDevice.gatt.disconnect();
+                bleDevice = null;
+                connectButton.textContent = 'Connect';
+                bleDataInput.disabled = true;
+                sendButton.disabled = true;
+                updateStatus('Connection Disconnected.', "#FF6347");
+                return;
+            }
+
+            if (!navigator.bluetooth) {
+                updateStatus('Web Bluetooth API is not available in this browser!', "#FF6347", true);
+                return;
+            }
+
+            updateStatus('Searching for device...', "#333");
+            
+            bleDevice = await navigator.bluetooth.requestDevice({
+                filters: [{ name: deviceName }],
+                optionalServices: [bleService]
+            });
+
+            updateStatus('Connecting to device...', "#333");
+            
+            // Bağlantıyı bekle
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const server = ('Searching for service...', "#333");
+            
+            const service = await server.getPrimaryService(bleService);
+            updateStatus('Searching for characteristic...', "#333");
+            
+            bleCharacteristic = await service.getCharacteristic(bleCharacteristicUUID);
+            
+            updateStatus('Connected!', "#2ECC71");
+            connectButton.textContent = 'Disconnect';
+            bleDataInput.disabled = false;
+            sendButton.disabled = false;
+
+            // Mevcut APN değerini oku
+            const value = await bleCharacteristic.readValue();
+            const decoder = new TextDecoder();
+            const receivedData = decoder.decode(value);
+            updateReceivedData(`Current APN: ${receivedData}`);
+
+            // Bağlantı koptuğunda
+            bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+        } catch (error) {
+            console.error('Bluetooth Error:', error);
+            updateStatus(`Error: ${error.message}`, "#FF6347", true);
             bleDevice = null;
-            connectButton.textContent = 'Bağlan';
+            connectButton.textContent = 'Connect';
             bleDataInput.disabled = true;
             sendButton.disabled = true;
-            updateStatus('Cihaz bağlantısı kesildi.', "#FF6347");
-            return;
         }
-
-        if (!navigator.bluetooth) {
-            updateStatus('Web Bluetooth API bu tarayıcıda kullanılamıyor!', "#FF6347", true);
-            return;
-        }
-
-        navigator.bluetooth.requestDevice({
-            filters: [{ name: deviceName }],
-            optionalServices: [bleService]
-        })
-            .then(device => {
-                bleDevice = device;
-                updateStatus('Cihaza bağlanılıyor...', "#333");
-                device.addEventListener('gattserverdisconnected', onDisconnected);
-                return device.gatt.connect();
-            })
-            .then(server => {
-                return server.getPrimaryService(bleService);
-            })
-            .then(service => {
-                return service.getCharacteristic(bleCharacteristicUUID);
-            })
-            .then(characteristic => {
-                bleCharacteristic = characteristic;
-                updateStatus('Bağlandı!', "#2ECC71");
-                connectButton.textContent = 'Bağlantıyı Kes';
-                bleDataInput.disabled = false;
-                sendButton.disabled = false;
-                return characteristic.readValue();
-            })
-            .then(value => {
-                const decoder = new TextDecoder();
-                const receivedData = decoder.decode(value);
-                updateReceivedData(`Mevcut APN: ${receivedData}`);
-            })
-            .catch(error => {
-                updateStatus(`Hata: ${error.message}`, "#FF6347", true);
-                console.error('Bluetooth Hatası:', error);
-            });
     });
 
     // Send Button
     sendButton.addEventListener('click', () => {
         if (!bleDevice || !bleCharacteristic) {
-            updateStatus('Cihaza bağlı değil.', "#FF6347", true);
+            updateStatus('Not Connected to Device.', "#FF6347", true);
             return;
         }
 
         const apn = 'apn' + bleDataInput.value.trim();
         if (apn === 'apn') {
-            alert('Lütfen bir APN değeri girin.');
+            alert('Enter a valid APN value.');
             return;
         }
 
@@ -174,22 +183,22 @@
             .then(value => {
                 const decoder = new TextDecoder();
                 const receivedData = decoder.decode(value);
-                updateReceivedData(`Güncellenmiş APN: ${receivedData}`);
+                updateReceivedData(`Updated APN: ${receivedData}`);
                 bleDataInput.value = '';
             })
             .catch(error => {
-                updateStatus(`Hata: ${error.message}`, "#FF6347", true);
-                console.error('Bluetooth Hatası:', error);
+                updateStatus(`Error: ${error.message}`, "#FF6347", true);
+                console.error('Bluetooth Error:', error);
             });
     });
 
     function onDisconnected(event) {
-        console.log('Cihaz bağlantısı kesildi:', event.target);
+        console.log('Disconnected!:', event.target);
         bleDevice = null;
-        connectButton.textContent = 'Bağlan';
+        connectButton.textContent = 'Connect';
         bleDataInput.disabled = true;
         sendButton.disabled = true;
-        updateStatus('Cihaz bağlantısı kesildi.', "#333");
+        updateStatus('Connection Disconnected.', "#333");
     }
 
     function updateStatus(message, color, isError = false) {
