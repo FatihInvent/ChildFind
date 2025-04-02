@@ -216,11 +216,40 @@
   </script>
 
   <style>
+    /* Genel Stiller */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    #head {
+      background-color: #4A90E2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      width: 100%;
+    }
+
+    #head h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    /* Tab Butonları */
     .tab-buttons {
       display: flex;
       justify-content: center;
       margin: 20px 0;
       gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 10px;
     }
 
     .tab-button {
@@ -232,6 +261,7 @@
       cursor: pointer;
       font-size: 16px;
       transition: background-color 0.3s ease;
+      min-width: 200px;
     }
 
     .tab-button:hover {
@@ -250,57 +280,21 @@
       display: block;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .container input {
-      width: 80%;
-      padding: 8px;
-      margin: 5px 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    .container .btn {
-      background-color: #4A90E2;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      margin: 5px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .container .btn:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-
-    #status, #receivedData {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    #status {
-      color: #ff6347;
-    }
-
+    /* Data Container */
     .data-container {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      padding: 20px;
+      padding: 15px;
       background-color: #f8f9fa;
       border-radius: 8px;
       margin: 20px;
-      gap: 20px;
+      gap: 15px;
     }
 
     .data-item {
       flex: 1;
+      min-width: 250px;
       text-align: center;
       padding: 15px;
       background-color: white;
@@ -321,6 +315,59 @@
       font-weight: bold;
     }
 
+    /* Harita */
+    #map {
+      width: 100%;
+      height: 400px;
+      margin: 20px auto;
+      display: block;
+      border-radius: 8px;
+    }
+
+    /* APN Container */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .container .btn {
+      background-color: #4A90E2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      min-width: 150px;
+    }
+
+    .container .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #status, #receivedData {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #status {
+      color: #ff6347;
+    }
+
     .container h1 {
       color: #333;
       font-size: 28px;
@@ -329,6 +376,64 @@
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    /* Responsive Tasarım */
+    @media screen and (max-width: 768px) {
+      #head h1 {
+        font-size: 1.5rem;
+      }
+
+      .tab-button {
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      .data-container {
+        margin: 10px;
+        padding: 10px;
+      }
+
+      .data-item {
+        min-width: 100%;
+      }
+
+      #map {
+        height: 300px;
+        margin: 10px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      .container h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .container .btn {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      #head h1 {
+        font-size: 1.2rem;
+      }
+
+      .data-item h2 {
+        font-size: 14px;
+      }
+
+      .data-item .value {
+        font-size: 18px;
+      }
+
+      #map {
+        height: 250px;
+      }
     }
   </style>
 </body>
